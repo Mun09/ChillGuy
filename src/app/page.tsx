@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
+import Image from "next/image";
+
+
 export default function Home() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -97,10 +100,16 @@ export default function Home() {
 
   return (
     <main>
-      <div
-        className="absolute inset-0 bg-cover bg-center z-[-1]"
-        style={{ backgroundImage: "url('/chillguy.jpg')" }} // public 폴더 안에 background.jpg 추가
-      ></div>
+      
+        <Image
+          src="/chillguy.jpg"
+          alt="Background"
+          fill                  // ✅ Next.js 13+에서 사용하는 방식
+          objectFit="cover"        
+          className="absolute inset-0 -z-10"
+        /> 
+      
+
       <audio ref={audioRef} src="/chillguy-music.mp3" loop />
 
       <div className="relative flex flex-col items-center justify-center bg-black p-4 rounded-lg shadow-lg">
