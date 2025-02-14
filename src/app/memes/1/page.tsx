@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
 
 import Image from "next/image";
 import { addText, getAllTexts, getRandomTexts } from "@/services/textService";
@@ -36,15 +37,15 @@ export default function Home() {
         const data = await getRandomTexts();
         setTexts(data);
         setIndex(0);
-      } catch(error) {
+      } catch (error) {
         console.error('Error fetching texts:', error);
       }
     };
-  
+
     getTexts();
-    
-    const intervalId = setInterval(getTexts, 60000);
-  
+
+    const intervalId = setInterval(getTexts, 60000); // 60초마다 문장들 다시 가져오기기
+
     return () => clearInterval(intervalId);
   }, []);
 
@@ -79,15 +80,23 @@ export default function Home() {
   const [index, setIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
 
+  // 10초 생존 -> 없어지는데 10초 줄게 -> 10초 생존 -> ...
   useEffect(() => {
-      const interval = setInterval(() => {
-        setIsVisible(false);
-        setTimeout(() => {
-          setIndex((prevIndex) => (prevIndex + 1) % Texts.length);
-          setIsVisible(true);
-        }, 5000);
+    const toggleVisibility = () => {
+      setIsVisible(true);
+      setTimeout(() => {
+        setIsVisible(false)
       }, 10000);
-      return () => clearInterval(interval);
+    }
+
+    toggleVisibility();
+    const interval = setInterval(() => {
+      toggleVisibility();
+      setIndex((prevIndex) => (prevIndex + 1) % Texts.length);
+    }, 20000);
+    
+    return () => clearInterval(interval);
+
   }, [Texts]);
 
   useEffect(() => {
@@ -98,21 +107,51 @@ export default function Home() {
 
   const [inputText, setInputText] = useState("");
 
+  const sentenceVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        delay: 0.5,
+        staggerChildren: 0.08,
+        staggerDirection: 1,
+      }
+    },
+    exit: {
+      opacity: 0,
+      transition: {
+        staggerChildren: 0.08,  // 글자 사라짐 전파 속도
+        when: "afterChildren"    // 모든 자식이 애니메이션을 끝낸 후에 exit을 적용하도록 설정
+      }
+    }
+  }
+
+  const letterVariants = {
+    hidden: { opacity: 0, y: 10 , transition: { duration: 0.5}},
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    exit: { 
+      opacity: 0, 
+      y: -10, 
+      x: 20, // 👉 오른쪽으로 이동하면서 사라지게 함!
+      transition: { duration: 0.5 } 
+    }
+  };
+
   return (
-    <main>
-      
-        <Image
-          src="/memes/chillguy.jpg"
-          alt="Background"
-          fill                  // ✅ Next.js 13+에서 사용하는 방식
-          objectFit="cover"        
-          className="absolute inset-0 -z-10"
-        /> 
-      
+    <main className="h-screen flex flex-col">
+
+      <Image
+        src="/memes/chillguy.jpg"
+        alt="Background"
+        fill                  // ✅ Next.js 13+에서 사용하는 방식
+        objectFit="cover"
+        className="absolute inset-0 -z-10"
+      />
+
 
       <audio ref={audioRef} src="/memes/chillguy-music.mp3" loop />
 
-      <div className="relative flex flex-col items-center justify-center bg-black p-4 rounded-lg shadow-lg">
+      <div className="h-[10%] flex items-center justify-center text-black">
         {!isPlaying && (
           <button
             onClick={handlePlay}
@@ -138,49 +177,56 @@ export default function Home() {
             </div>
           </>
         )}
-      </div> 
-
-      <div className="relative">
-      {
-        isPlaying && (
-          <div className="flex h-screen">
-            <div className="w-[70%]"></div>
-
-            <div className="w-[30%] mt-40 mr-10 items-center text-white text-2xl font-bold">
-
-              {Chars.map((char, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: isVisible ? 1 : 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }} // 한 글자씩 딜레이
-                >
-                  {char}
-                </motion.span>
-              ))}
-            </div>
-          </div>
-        )
-      }
-
-      {
-isPlaying && 
-<form onSubmit={sendInputText}>
-    <input
-      type="text"
-      value={inputText}
-      onChange={(e) => setInputText(e.target.value)} // 입력값 업데이트
-      placeholder="Enter a sentence"
-      className="p-2 rounded"
-    />
-    <button type="submit" className="p-2 bg-blue-500 text-white rounded ml-2">
-      Add Text
-    </button>
-  </form>
-      }
       </div>
 
+      <div className="flex w-full h-[90%]">
+        {
+          isPlaying && (
+            <>
+              <div className="w-[70%]"></div>
+              <div className="w-[30%] flex flex-col text-white text-2xl font-bold">
 
+                <div className="h-[30%] mr-10 flex items-end overflow-hidden">
+                  <motion.h3
+                    key={Chars.join("")}
+                    variants={sentenceVariants}
+                    initial="hidden"
+                    animate={isVisible ? "visible" : "exit"}
+                    exit= "exit"
+                  >
+                    {Chars.map((char, index) => {
+                      return (
+                        <motion.span key={index} variants={letterVariants}>
+                          {char}
+                        </motion.span>
+                      )
+                    })}
+                  </motion.h3>
+                </div>
+
+                <div className="h-[70%] flex items-start justify-center">
+                  <div className="mt-40 w-full">
+                    <form onSubmit={sendInputText} className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder="It is completely EmPtY..."
+                        className="p-3 rounded border border-gray-300 text-black text-sm"
+                      />
+                      <button type="submit" className="p-3 rounded bg-white text-black text-sm border border-gray-500">
+                        That's it...
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+              </div>
+            </>
+          )
+        }
+
+      </div>
     </main>
   )
 }
