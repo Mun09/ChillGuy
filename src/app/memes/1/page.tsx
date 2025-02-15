@@ -13,7 +13,7 @@ export default function Home() {
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.5);
+  const [volume, setVolume] = useState(0.3);
 
   const [Texts, setTexts] = useState<Texts>([]);
   const [Chars, setChars] = useState<string[]>([]);
