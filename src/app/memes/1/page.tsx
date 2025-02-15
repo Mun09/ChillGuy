@@ -15,19 +15,6 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.5);
 
-  const sentences = [
-    "Everything’s gonna work out, just relax and enjoy the ride.",
-    "Don’t stress it, life’s all about the good vibes.",
-    "We’ll figure it out, no rush.",
-    "The best thing you can do is chill and let things flow.",
-    "No need to overthink it, just go with the flow.",
-    "Everything will be alright, take it one step at a time.",
-    "Life’s a breeze when you don’t take it too seriously.",
-    "We’ve got this, no need to rush, just enjoy the moment.",
-    "Just breathe and let it all go. Everything’s cool.",
-    "Don’t worry about it, everything falls into place eventually."
-  ];
-
   const [Texts, setTexts] = useState<Texts>([]);
   const [Chars, setChars] = useState<string[]>([]);
 
@@ -215,7 +202,7 @@ export default function Home() {
                         className="p-3 rounded border border-gray-300 text-black text-sm"
                       />
                       <button type="submit" className="p-3 rounded bg-white text-black text-sm border border-gray-500">
-                        That's it...
+                        World, listen
                       </button>
                     </form>
                   </div>

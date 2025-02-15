@@ -1,7 +1,7 @@
 // src/services/textService.ts
 import { TextData, Texts } from '../types/textTypes';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL + "/texts" || 'http://localhost:8080/texts';
+const API_URL = process.env.NEXT_PUBLIC_API_URL + "/texts";
 
 // GET: 모든 텍스트 가져오기
 export const getAllTexts = async (): Promise<Texts> => {
